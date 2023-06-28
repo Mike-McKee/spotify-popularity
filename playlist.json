@@ -1,4 +1,3 @@
-[
     {
         "href": "https://api.spotify.com/v1/playlists/5nm9DmPdEB4PDJGlAofR6c/tracks?offset=0&limit=100&additional_types=track",
         "items": [
@@ -44834,4 +44833,3 @@
         "previous": null,
         "total": 439
     }
-]
