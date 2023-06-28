@@ -13,13 +13,28 @@ spotify = spotipy.Spotify(client_credentials_manager=cc_manager)
 
 #Get all tracks in my Canciones en Español playlist
 playlist_name = '5nm9DmPdEB4PDJGlAofR6c'
-requests = spotify.playlist_tracks(playlist_name)
+all_tracks = []
+limit = 100
+offset = 0
 
-data = [requests]
+#Spotify API limmits requests to 100. Since the playlist has more songs than that,
+#the while loop keeps requesting until we have every song
+while True:
+        requests = spotify.playlist_tracks(playlist_name, offset=offset, limit=limit)
 
-#turns playlist data into a json file
-with open('playlist.json', 'w') as jsonfile:        #note: renamed playlist.json to first_test.json
-    json.dump(data, jsonfile, indent=4)
+        if 'items' in requests:
+            all_tracks.extend(requests['items'])
+            if len(requests['items']) < limit:
+                break
+
+            offset += limit
+
+        else:
+            print('Error Occurred')
+            break
+
+with open('playlist.json', 'w') as jsonfile:
+    json.dump(all_tracks, jsonfile, indent=4)
 
 #test to make sure program runs properly
 print('================ ALL DONE. PLAYLIST DOWNLOADED ================')
