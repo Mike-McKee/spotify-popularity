@@ -1,0 +1,3 @@
+# Here's the big algorithm I'm writing to score a user's taste in music...
+# It's gonan take a while to finish but I'll continue to push my code until it's done
+
