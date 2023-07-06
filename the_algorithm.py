@@ -4,11 +4,14 @@
 import numpy as np
 import csv
 import pandas as pd
+import math
 
+#Good
 def read_csv(file):
     df = pd.read_csv(file)
     return df
 
+#Good
 def weighted_artist_pop(csv_file):
     weighted_pop = {}
     avg = csv_file['Artist_Popularity'].mean()
@@ -23,6 +26,7 @@ def weighted_artist_pop(csv_file):
     
     return weighted_pop
 
+#Good
 def weighted_track_pop(csv_file):
     weighted_pop = {}
     avg = csv_file['Track_Popularity'].mean()
@@ -37,36 +41,94 @@ def weighted_track_pop(csv_file):
     
     return weighted_pop
 
-def artist_place(num):
-    if num == 1:
-        return 1
-    elif num == 2:
-        return 0.95
-    elif num == 3:
-        return 0.9
-    elif num == 4:
-        return 0.9
-    elif num == 5:
-        return 0.8
-    elif num == 6:
-        return 0.75
+#Good
+def artist_place(playlist, artist):
+    playlist = playlist.fillna('')
+    result = {}
+    for i, p in playlist.iterrows():
+        track_name = p['Track_Name']
+        artist_pop = artist['Artist_Popularity']
+        track = {}
+        for j in playlist.columns:
+            if j.endswith('1_Name'):
+                a_name = p[j]
+                if a_name != '':
+                    track[p[j]] = 1
+            elif j.endswith('2_Name'):
+                a_name = str(p[j])
+                if a_name != '':
+                    track[p[j]] = 0.95
+            elif j.endswith('3_Name'):
+                a_name = p[j]
+                if a_name != '':
+                    track[p[j]] = 0.9
+            elif j.endswith('4_Name'):
+                a_name = p[j]
+                if a_name != '':
+                    track[p[j]] = 0.85
+            elif j.endswith('5_Name'):
+                a_name = p[j]
+                if a_name != '':
+                    track[p[j]] = 0.8
+            elif j.endswith('6_Name'):
+                a_name = p[j]
+                if a_name != '':
+                    track[p[j]] = 0.75
 
-def featured_artist(name):
-    if "feat" in name or "Feat" in name:
-        return 0.5
-    else:
-        return 1
+        result[track_name] = track
+    return result
 
+
+#Needs Work
+def featured_artist(playlist):
+    featured_list = []
+    track_name = playlist['Track_Name']
+    artist_names = ['Artist_1_Name','Artist_2_Name',
+                    'Artist_3_Name','Artist_4_Name',
+                    'Artist_5_Name','Artist_6_Name']
+    
+    for i in track_name:
+        if 'feat' in i or 'Feat' in i:
+            for j in artist_names:
+                for k in playlist[j]:
+                    featured_list.append(k)
+
+    return featured_list
+
+#Good
 def top_tracks(artist):
-    top_tracks = {}
-    columns = []
-    for i in artist.columns:
-        if i.startswith('Top'):
-            columns.append(i)
-    for i in columns:
-        top_tracks[artist['Artist_Name']] = artist[i]
+    result = {}
+    
+    for i, a in artist.iterrows():
+        name = a['Artist_Name']
+        top_tracks = []
+        for j in artist.columns:
+            if j.startswith('Top'):
+                top_tracks.append(j)
+        
+        tracks = []
+        for k in top_tracks:
+            tracks.append(a[k])
 
-    return top_tracks 
+        result[name] = tracks
+
+    return result
+
+# def main(playlist, artist):
+#     score = []
+#     p = read_csv(playlist)
+#     a = read_csv(artist)
+
+#     a_weight = weighted_artist_pop(a)
+#     p_weight = weighted_track_pop(p)
+
+#     for i in p:
+#         temp = p_weight
+        
+#     return p
 
 artist = read_csv('python_code/files/updated_artists.csv')
 playlist = read_csv('python_code/files/playlist.csv')
+
+# print(main('python_code/files/playlist.csv', 'python_code/files/updated_artists.csv'))
+print(artist_place(playlist, artist))
