@@ -6,12 +6,12 @@ import csv
 import pandas as pd
 import math
 
-#Good
+#Good -- returns DataFrame for csv file
 def read_csv(file):
     df = pd.read_csv(file)
     return df
 
-#Good
+#Good -- returns dictionary of {artist name: weighted pop}
 def weighted_artist_pop(csv_file):
     weighted_pop = {}
     avg = csv_file['Artist_Popularity'].mean()
@@ -26,7 +26,7 @@ def weighted_artist_pop(csv_file):
     
     return weighted_pop
 
-#Good
+#Good -- returns dictionary of {track name: weighted pop}
 def weighted_track_pop(csv_file):
     weighted_pop = {}
     avg = csv_file['Track_Popularity'].mean()
@@ -41,7 +41,7 @@ def weighted_track_pop(csv_file):
     
     return weighted_pop
 
-#Good
+#Good -- returns dictionary of {artist name: place multiplier, artist 2 name: place multiplier, ...}
 def artist_place(playlist, artist):
     playlist = playlist.fillna('')
     result = {}
@@ -79,23 +79,25 @@ def artist_place(playlist, artist):
     return result
 
 
-#Needs Work
+#Good -- returns list of [track name, featured artist]
 def featured_artist(playlist):
     featured_list = []
-    track_name = playlist['Track_Name']
+    playlist = playlist[playlist['Track_Name'].str.contains('feat', case=False)]
     artist_names = ['Artist_1_Name','Artist_2_Name',
                     'Artist_3_Name','Artist_4_Name',
                     'Artist_5_Name','Artist_6_Name']
-    
-    for i in track_name:
-        if 'feat' in i or 'Feat' in i:
-            for j in artist_names:
-                for k in playlist[j]:
-                    featured_list.append(k)
+
+
+    for i, t in playlist.iterrows():
+        track = t['Track_Name']
+        for artist in artist_names:
+            if t[artist] in track:
+                featured_list.append([track, t[artist]])
+                break
 
     return featured_list
 
-#Good
+#Good -- returns dictionary of {artist: [top 10 tracks]}
 def top_tracks(artist):
     result = {}
     
@@ -114,21 +116,26 @@ def top_tracks(artist):
 
     return result
 
-# def main(playlist, artist):
-#     score = []
-#     p = read_csv(playlist)
-#     a = read_csv(artist)
-
-#     a_weight = weighted_artist_pop(a)
-#     p_weight = weighted_track_pop(p)
-
-#     for i in p:
-#         temp = p_weight
-        
-#     return p
+#Good -- returns dictionary of {artist name: artist frequency}
+def artists_frequency(playlist, artist):
+    result = {}
+    for a in artist.itertuples(index=False):
+        count = 0
+        for column in playlist.columns:
+            if column.startswith('Artist_') and column.endswith('_Name'):
+                for j in playlist[column]:
+                    if j == a[0]:
+                        count += 1
+        result[a[0]] = count
+    return result
 
 artist = read_csv('python_code/files/updated_artists.csv')
 playlist = read_csv('python_code/files/playlist.csv')
 
 # print(main('python_code/files/playlist.csv', 'python_code/files/updated_artists.csv'))
-print(artist_place(playlist, artist))
+# print(weighted_artist_pop(artist))
+# print(weighted_track_pop(playlist))
+# print(artist_place(playlist, artist))
+# print(featured_artist(playlist))
+# print(top_tracks(artist))
+# print(artists_frequency(playlist, artist))
