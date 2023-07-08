@@ -12,34 +12,44 @@ def read_csv(file):
     df = pd.read_csv(file)
     return df
 
-#Good -- returns dictionary of {artist name: weighted pop}
+#Good -- returns dictionary of {artist name: raw poplularity}
+def raw_artists_pop(csv_file):
+    raw_pop = {}
+    for i, name in zip(csv_file['Artist_Popularity'], csv_file['Artist_Name']):
+        raw_pop[name] = i
+    return raw_pop
+
+#Good -- returns dictionary of {track name: raw popularity}
+def raw_track_pop(csv_file):
+    raw_pop = {}
+    for i, name in zip(csv_file['Track_Popularity'], csv_file['Track_Name']):
+        raw_pop[name] = i
+    return raw_pop        
+
+#Good -- returns dictionary of {artist name: weighted popularity}
 def weighted_artist_pop(csv_file):
     weighted_pop = {}
     avg = csv_file['Artist_Popularity'].mean()
     std = csv_file['Artist_Popularity'].std()
-
-    for column in csv_file.columns:
-        if column.startswith('Artist_Popularity'):
-            for i, name in zip(csv_file[column], csv_file['Artist_Name']):
-                z_score = (i - avg) / std
-                new_score = (z_score * 20) + 50
-                weighted_pop[name] = new_score
+    
+    for i, name in zip(csv_file['Artist_Popularity'], csv_file['Artist_Name']):
+        z_score = (i - avg) / std
+        new_score = (z_score * 20) + 50
+        weighted_pop[name] = new_score
     
     return weighted_pop
 
-#Good -- returns dictionary of {track name: weighted pop}
+#Good -- returns dictionary of {track name: weighted popularity}
 def weighted_track_pop(csv_file):
     weighted_pop = {}
     avg = csv_file['Track_Popularity'].mean()
     std = csv_file['Track_Popularity'].std()
 
-    for column in csv_file.columns:
-        if column.startswith('Track_Popularity'):
-            for i, name in zip(csv_file[column], csv_file['Track_Name']):
-                z_score = (i - avg) / std
-                new_score = (z_score * 20) + 50
-                weighted_pop[name] = new_score
-    
+    for i, name in zip(csv_file['Track_Popularity'], csv_file['Track_Name']):
+        z_score = (i - avg) / std
+        new_score = (z_score * 20) + 50
+        weighted_pop[name] = new_score
+
     return weighted_pop
 
 #Good -- returns dictionary of {artist name: place multiplier, artist 2 name: place multiplier, ...}
@@ -135,17 +145,23 @@ def artists_frequency(playlist, artist):
         result[a[0]] = count
     return result
 
-
+#In progress, putting the pieces together to score my playlist
 def main(p, a):
     list_scores = []
+    raw_a_pop = raw_artists_pop(a)
+    weight_a_pop = weighted_artist_pop(a)
+    raw_t_pop = raw_track_pop(p)
+    weight_t_pop = weighted_track_pop(p)
+    a_place = artist_place(p,a)
+    feat_a = featured_artist(p)
+    top_track = top_tracks(a)
+    a_frequency = artists_frequency(p,a)
 
-    for i in p.columns:
-        score = 0
-
+    # for i in p.columns:
+    #     score = 0
     
-
-    f_score = (sum(k for k in list_scores)/len(list_scores))
-    return f_score
+    # f_score = (sum(k for k in list_scores)/len(list_scores))
+    # return f_score
 
 
 artist = read_csv('python_code/files/updated_artists.csv')
@@ -158,3 +174,7 @@ playlist = read_csv('python_code/files/playlist.csv')
 # print(featured_artist(playlist))
 # print(top_tracks(artist))
 # print(artists_frequency(playlist, artist))
+# print(raw_artists_pop(artist))
+# print(raw_track_pop(playlist))
+
+main(playlist, artist)
