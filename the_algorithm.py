@@ -5,6 +5,7 @@ import numpy as np
 import csv
 import pandas as pd
 import math
+import re
 
 #Good -- returns DataFrame for csv file
 def read_csv(file):
@@ -79,9 +80,9 @@ def artist_place(playlist, artist):
     return result
 
 
-#Good -- returns list of [track name, featured artist]
+#Good -- returns dictionary of {Track_name: [list of featured artists]}
 def featured_artist(playlist):
-    featured_list = []
+    featured_list = {}
     playlist = playlist[playlist['Track_Name'].str.contains('feat', case=False)]
     artist_names = ['Artist_1_Name','Artist_2_Name',
                     'Artist_3_Name','Artist_4_Name',
@@ -90,10 +91,15 @@ def featured_artist(playlist):
 
     for i, t in playlist.iterrows():
         track = t['Track_Name']
+        feat = track.find('feat')
+        after_feat = track[feat + len('feat'):]
+
+        feat_artist = []
         for artist in artist_names:
-            if t[artist] in track:
-                featured_list.append([track, t[artist]])
-                break
+            if str(t[artist]) in after_feat:
+                feat_artist.append(t[artist])
+
+        featured_list[t['Track_Name']] = feat_artist
 
     return featured_list
 
@@ -128,6 +134,19 @@ def artists_frequency(playlist, artist):
                         count += 1
         result[a[0]] = count
     return result
+
+
+def main(p, a):
+    list_scores = []
+
+    for i in p.columns:
+        score = 0
+
+    
+
+    f_score = (sum(k for k in list_scores)/len(list_scores))
+    return f_score
+
 
 artist = read_csv('python_code/files/updated_artists.csv')
 playlist = read_csv('python_code/files/playlist.csv')
