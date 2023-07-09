@@ -12,45 +12,19 @@ def read_csv(file):
     df = pd.read_csv(file)
     return df
 
-# Returns dictionary of {artist name: raw poplularity}
-def raw_artists_pop(artist):
-    raw_pop = {}
+# Returns dictionary of {artist name: artist poplularity}
+def artists_pop(artist):
+    popularity = {}
     for i, name in zip(artist['Artist_Popularity'], artist['Artist_Name']):
-        raw_pop[name] = i
-    return raw_pop
+        popularity[name] = i
+    return popularity
 
-# Returns dictionary of {track name: raw popularity}
-def raw_track_pop(playlist):
-    raw_pop = {}
+# Returns dictionary of {track name: track popularity}
+def track_pop(playlist):
+    popularity = {}
     for i, name in zip(playlist['Track_Popularity'], playlist['Track_Name']):
-        raw_pop[name] = i
-    return raw_pop        
-
-# Returns dictionary of {artist name: weighted popularity}
-def weighted_artist_pop(artist):
-    weighted_pop = {}
-    avg = artist['Artist_Popularity'].mean()
-    std = artist['Artist_Popularity'].std()
-    
-    for i, name in zip(artist['Artist_Popularity'], artist['Artist_Name']):
-        z_score = (i - avg) / std
-        new_score = (z_score * 20) + 50
-        weighted_pop[name] = new_score
-    
-    return weighted_pop
-
-# Returns dictionary of {track name: weighted popularity}
-def weighted_track_pop(playlist):
-    weighted_pop = {}
-    avg = playlist['Track_Popularity'].mean()
-    std = playlist['Track_Popularity'].std()
-
-    for i, name in zip(playlist['Track_Popularity'], playlist['Track_Name']):
-        z_score = (i - avg) / std
-        new_score = (z_score * 20) + 50
-        weighted_pop[name] = new_score
-
-    return weighted_pop
+        popularity[name] = i
+    return popularity        
 
 # Returns dictionary of {artist name: place multiplier, artist 2 name: place multiplier, ..., artist 6 name: place multiplier}
 def artist_place(playlist, artist):
@@ -156,30 +130,30 @@ def track_ratio(playlist, artist):
 
     return result            
 
-#Solves equation using raw scores as base
-def final_raw_score(playlist,artist):
+#Solves equation to give final score
+def final_score(playlist,artist):
     #removing null values
     playlist = playlist.fillna('')
     
     #Calling functions I'll need
-    ra_pop = raw_artists_pop(artist)
-    rt_pop = raw_track_pop(playlist)
+    artist_pop = artists_pop(artist)
+    track_popularity = track_pop(playlist)
     art_place = artist_place(playlist,artist)
     top_track = top_tracks(artist)
     artist_ratio = track_ratio(playlist,artist)
 
     #finds part 'r' of the equation
-    raw = []
+    ratio = []
     for i in artist_ratio:
-        raw.append(ra_pop[i] * artist_ratio[i])
-    avg_raw = sum(raw)/len(raw)
+        ratio.append(artist_pop[i] * artist_ratio[i])
+    avg_ratio = sum(ratio)/len(ratio)
 
-    track_scores_raw = []
+    track_scores = []
     for index, row in playlist.iterrows():
         artist_calc = []
         name = row['Track_Name']
         track_id = row['Track_Id']
-        track_pop = rt_pop.get(name,0)
+        t_pop = track_popularity.get(name,0)
         a_place = art_place.get(track_id,0)
 
         for i in range(1,7):
@@ -187,11 +161,11 @@ def final_raw_score(playlist,artist):
             a_id = row[f'Artist_{i}_Id']
             
             if a_name != '':
-                a_pop = ra_pop.get(a_name,0)
+                a_pop = artist_pop.get(a_name,0)
                 top_10 = top_track.get(a_name,0)
 
                 #multiplier if song popularity < or > artists popularity
-                multiplier = 0.9 if track_pop < a_pop else 1.1
+                multiplier = 0.9 if t_pop < a_pop else 1.1
 
                 #multiplier if song is or is not in artist top tracks
                 multiplier_2 = 1.1 if name in top_10 else 0.9
@@ -201,66 +175,15 @@ def final_raw_score(playlist,artist):
                 
                 artist_calc.append(place*a_pop*(multiplier*multiplier_2))
 
-        track_scores_raw.append((track_pop*len(artist_calc) + sum(artist_calc))/(len(artist_calc)+1))
+        track_scores.append((t_pop*len(artist_calc) + sum(artist_calc))/(len(artist_calc)+1))
 
-    tr = sum(track_scores_raw)/len(track_scores_raw)
+    tr = sum(track_scores)/len(track_scores)
 
-    return (X*tr + avg_raw)/Y
+    return (X*tr + avg_ratio)/Y
 
-#Solves equation using weighted scores as base
-def final_weighted_score(playlist,artist):
-    #removing null values
-    playlist = playlist.fillna('')
-    
-    #Calling functions I'll need
-    wa_pop = weighted_artist_pop(artist)
-    wt_pop = weighted_track_pop(playlist)
-    art_place = artist_place(playlist,artist)
-    top_track = top_tracks(artist)
-    artist_ratio = track_ratio(playlist,artist)
 
-    #finds part 'r' of the equation
-    weighted = []
-    for i in artist_ratio:
-        weighted.append(wa_pop[i] * artist_ratio[i])
-    avg_raw = sum(weighted)/len(weighted)
-
-    track_scores_weighted = []
-    for index, row in playlist.iterrows():
-        artist_calc = []
-        name = row['Track_Name']
-        track_id = row['Track_Id']
-        track_pop = wt_pop.get(name,0)
-        a_place = art_place.get(track_id,0)
-
-        for i in range(1,7):
-            a_name = row[f'Artist_{i}_Name']
-            a_id = row[f'Artist_{i}_Id']
-            
-            if a_name != '':
-                a_pop = wa_pop.get(a_name,0)
-                top_10 = top_track.get(a_name,0)
-
-                #multiplier if song popularity < or > artists popularity
-                multiplier = 0.9 if track_pop < a_pop else 1.1
-
-                #multiplier if song is or is not in artist top tracks
-                multiplier_2 = 1.1 if name in top_10 else 0.9
-
-                #Finding the multiplier for artist place
-                place = a_place[a_id]
-                
-                artist_calc.append(place*a_pop*(multiplier*multiplier_2))
-
-        track_scores_weighted.append((track_pop*len(artist_calc) + sum(artist_calc))/(len(artist_calc)+1))
-
-    tw = sum(track_scores_weighted)/len(track_scores_weighted)
-
-    return (X*tw + avg_raw)/Y
-
-#Calculates final score by averaging raw and weighted scores
 def main(playlist,artist):
-    return round((final_raw_score(playlist,artist) + final_weighted_score(playlist,artist))/2)
+    return round((final_score(playlist,artist)))
    
 
 artist = read_csv('python_code/files/updated_artists.csv')
