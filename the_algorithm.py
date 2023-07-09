@@ -52,67 +52,42 @@ def weighted_track_pop(playlist):
 
     return weighted_pop
 
-# Returns dictionary of {artist name: place multiplier, artist 2 name: place multiplier, ...}
-#need to fix this to account for duplicate track names... consider using track id instead of track name
+# Returns dictionary of {artist name: place multiplier, artist 2 name: place multiplier, ..., artist 6 name: place multiplier}
 def artist_place(playlist, artist):
     playlist = playlist.fillna('')
     result = {}
     for i, p in playlist.iterrows():
-        track_name = p['Track_Name']
+        track_id = p['Track_Id']
         artist_pop = artist['Artist_Popularity']
         track = {}
         for j in playlist.columns:
-            if j.endswith('1_Name'):
-                a_name = p[j]
-                if a_name != '':
+            if j.endswith('1_Id'):
+                a_id = p[j]
+                if a_id != '':
                     track[p[j]] = 1
-            elif j.endswith('2_Name'):
-                a_name = str(p[j])
-                if a_name != '':
+            elif j.endswith('2_Id'):
+                a_id = str(p[j])
+                if a_id != '':
                     track[p[j]] = 0.95
-            elif j.endswith('3_Name'):
-                a_name = p[j]
-                if a_name != '':
+            elif j.endswith('3_Id'):
+                a_id = p[j]
+                if a_id != '':
                     track[p[j]] = 0.9
-            elif j.endswith('4_Name'):
-                a_name = p[j]
-                if a_name != '':
+            elif j.endswith('4_Id'):
+                a_id = p[j]
+                if a_id != '':
                     track[p[j]] = 0.85
-            elif j.endswith('5_Name'):
-                a_name = p[j]
-                if a_name != '':
+            elif j.endswith('5_Id'):
+                a_id = p[j]
+                if a_id != '':
                     track[p[j]] = 0.8
-            elif j.endswith('6_Name'):
-                a_name = p[j]
-                if a_name != '':
+            elif j.endswith('6_Id'):
+                a_id = p[j]
+                if a_id != '':
                     track[p[j]] = 0.75
 
-        result[track_name] = track
+        result[track_id] = track
     return result
-
-
-# Returns dictionary of {Track_name: [list of featured artists]}
-def featured_artist(playlist):
-    featured_list = {}
-    playlist = playlist[playlist['Track_Name'].str.contains('feat', case=False)]
-    artist_names = ['Artist_1_Name','Artist_2_Name',
-                    'Artist_3_Name','Artist_4_Name',
-                    'Artist_5_Name','Artist_6_Name']
-
-
-    for i, t in playlist.iterrows():
-        track = t['Track_Name']
-        feat = track.find('feat')
-        after_feat = track[feat + len('feat'):]
-
-        feat_artist = []
-        for artist in artist_names:
-            if str(t[artist]) in after_feat:
-                feat_artist.append(t[artist])
-
-        featured_list[t['Track_Name']] = feat_artist
-
-    return featured_list
 
 # Returns dictionary of {artist: [top 10 tracks]}
 def top_tracks(artist):
@@ -181,50 +156,35 @@ def track_ratio(playlist, artist):
 
     return result            
 
-#In progress
-def main(playlist,artist):
-    raw_scores = []
-    weighted_scores = []
+#Solves equation using raw scores as base
+def final_raw_score(playlist,artist):
+    #removing null values
     playlist = playlist.fillna('')
-
-    #calling the functions we'll need
+    
+    #Calling functions I'll need
     ra_pop = raw_artists_pop(artist)
-    wa_pop = weighted_artist_pop(artist)
     rt_pop = raw_track_pop(playlist)
-    wt_pop = weighted_track_pop(playlist)
     art_place = artist_place(playlist,artist)
-    feat_artist = featured_artist(playlist)
     top_track = top_tracks(artist)
     artist_ratio = track_ratio(playlist,artist)
 
     #finds part 'r' of the equation
     raw = []
-    weight = []
     for i in artist_ratio:
         raw.append(ra_pop[i] * artist_ratio[i])
-        weight.append(wa_pop[i] * artist_ratio[i])
     avg_raw = sum(raw)/len(raw)
-    avg_weight = sum(weight)/len(weight)
-    
-    # for index, row in playlist.iterrows():
-    #     track = row['Track_Name']
-    #     for i in feat_artist:
-    #         fa = feat_artist[i]
-    #     print(track)
 
-    #so far this creates artist multiplier per track... now we just need to add values for 
-    #gonna have to duplicate this function for weighted scores
-    #gotta add myltiplier based on the artists place
     track_scores_raw = []
     for index, row in playlist.iterrows():
         artist_calc = []
         name = row['Track_Name']
+        track_id = row['Track_Id']
         track_pop = rt_pop.get(name,0)
-        a_place = art_place.get(name,0)
-        # print(a_place)
+        a_place = art_place.get(track_id,0)
 
         for i in range(1,7):
             a_name = row[f'Artist_{i}_Name']
+            a_id = row[f'Artist_{i}_Id']
             
             if a_name != '':
                 a_pop = ra_pop.get(a_name,0)
@@ -236,45 +196,75 @@ def main(playlist,artist):
                 #multiplier if song is or is not in artist top tracks
                 multiplier_2 = 1.1 if name in top_10 else 0.9
 
-
-                #getting error about No Te Vayas by Carlos Vives bc his name doesn't exist in the song in a_place...
-                #That's because camilo has a song with same title... so we need to fix our artist_place function
-                place = a_place[a_name]
-                # print(name, a_name, place)
+                #Finding the multiplier for artist place
+                place = a_place[a_id]
+                
                 artist_calc.append(place*a_pop*(multiplier*multiplier_2))
-        
+
         track_scores_raw.append((track_pop*len(artist_calc) + sum(artist_calc))/(len(artist_calc)+1))
 
     tr = sum(track_scores_raw)/len(track_scores_raw)
 
-    return (2*tr + avg_raw)/3
+    return (X*tr + avg_raw)/Y
 
+#Solves equation using weighted scores as base
+def final_weighted_score(playlist,artist):
+    #removing null values
+    playlist = playlist.fillna('')
+    
+    #Calling functions I'll need
+    wa_pop = weighted_artist_pop(artist)
+    wt_pop = weighted_track_pop(playlist)
+    art_place = artist_place(playlist,artist)
+    top_track = top_tracks(artist)
+    artist_ratio = track_ratio(playlist,artist)
+
+    #finds part 'r' of the equation
+    weighted = []
+    for i in artist_ratio:
+        weighted.append(wa_pop[i] * artist_ratio[i])
+    avg_raw = sum(weighted)/len(weighted)
+
+    track_scores_weighted = []
+    for index, row in playlist.iterrows():
+        artist_calc = []
+        name = row['Track_Name']
+        track_id = row['Track_Id']
+        track_pop = wt_pop.get(name,0)
+        a_place = art_place.get(track_id,0)
+
+        for i in range(1,7):
+            a_name = row[f'Artist_{i}_Name']
+            a_id = row[f'Artist_{i}_Id']
+            
+            if a_name != '':
+                a_pop = wa_pop.get(a_name,0)
+                top_10 = top_track.get(a_name,0)
+
+                #multiplier if song popularity < or > artists popularity
+                multiplier = 0.9 if track_pop < a_pop else 1.1
+
+                #multiplier if song is or is not in artist top tracks
+                multiplier_2 = 1.1 if name in top_10 else 0.9
+
+                #Finding the multiplier for artist place
+                place = a_place[a_id]
+                
+                artist_calc.append(place*a_pop*(multiplier*multiplier_2))
+
+        track_scores_weighted.append((track_pop*len(artist_calc) + sum(artist_calc))/(len(artist_calc)+1))
+
+    tw = sum(track_scores_weighted)/len(track_scores_weighted)
+
+    return (X*tw + avg_raw)/Y
+
+#Calculates final score by averaging raw and weighted scores
+def main(playlist,artist):
+    return round((final_raw_score(playlist,artist) + final_weighted_score(playlist,artist))/2)
+   
 
 artist = read_csv('python_code/files/updated_artists.csv')
 playlist = read_csv('python_code/files/playlist.csv')
 
-# print(main(playlist, artist))
+print(main(playlist, artist))
 
-# print(main('python_code/files/playlist.csv', 'python_code/files/updated_artists.csv'))
-# print(weighted_artist_pop(artist))
-# print(weighted_track_pop(playlist))
-print(artist_place(playlist, artist))
-# print(featured_artist(playlist))
-# print(top_tracks(artist))
-# print(artists_frequency(playlist, artist))
-# print(raw_artists_pop(artist))
-# print(raw_track_pop(playlist))
-# print(percent_top_tracks(playlist, artist))
-# print(track_ratio(playlist, artist))
-
-
-#Testing how to use the functions in action
-# place = artist_place(playlist,artist)
-# weight = weighted_artist_pop(artist)
-# raw = raw_artists_pop(artist)
-# weighted = []
-# raw_list = []
-# for i in place:
-#     for j in place[i]:
-#         weighted.append(weight[j] * place[i][j])
-#         raw_list.append(raw[j] * place[i][j])
