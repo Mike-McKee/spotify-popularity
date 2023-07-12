@@ -1,7 +1,4 @@
-import numpy as np
 import pandas as pd
-import csv, math
-
 
 # X defines how much we favor the popularity of the tracks compared to the artists popylarity
 X = 2
