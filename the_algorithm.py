@@ -13,13 +13,39 @@ import pandas as pd
 X = 2
 Y = X + 1
 
-# Returns DataFrame for csv file
 def read_csv(file):
+    """Uses pandas module to create a data frame with the file parameter
+
+    Parameter -- file
+    -----------------
+    - This has to be a csv file
+    """
     df = pd.read_csv(file)
     return df
 
 # Returns dictionary of {artist name: artist poplularity}
 def artists_pop(artist):
+    """
+    Finds the artist popularity for all artists given in the parameter
+
+    Parameter -- DataFrame
+    -------------------
+    - artist is a Panda's DataFrame that's creaetd using the read_csv() function
+
+    Return value -- dictionary
+    --------------------------
+    - Returns a dictionary in the format {artist name: arist popularity}
+
+    Ex:
+    {   
+        'Abraham Mateo': 69,
+        'Adam Levine': 71,
+        'Aitana': 75,
+        'Aleesha': 43,
+        'Alejandro Rian1o': 31,
+        'Alejandro Sanz': 75
+    }
+    """
     popularity = {}
     for i, name in zip(artist['Artist_Popularity'], artist['Artist_Name']):
         popularity[name] = i
@@ -27,18 +53,72 @@ def artists_pop(artist):
 
 # Returns dictionary of {track name: track popularity}
 def track_pop(playlist):
+    """
+    Finds the track popularity for all tracks given in the parameter.
+
+    Parameter -- DataFrame
+    -------------------
+    - playlist is a Panda's DataFrame that's creaetd using the read_csv() function
+
+    Return value -- dictionary
+    --------------------------
+    - Returns a dictionary in the format {track name: track popularity}
+
+    Ex:
+    {
+        'Felices los 4': 77
+        'ADMV': 72,
+        'Chantaje (feat. Maluma)': 80,
+        'Ignorantes': 72,
+        'Me Gusta': 74,
+        'Suerte (Whenever, Wherever)': 71
+    }
+    """
     popularity = {}
     for i, name in zip(playlist['Track_Popularity'], playlist['Track_Name']):
         popularity[name] = i
     return popularity        
 
-# Returns dictionary of {artist name: place multiplier, artist 2 name: place multiplier, ..., artist 6 name: place multiplier}
 def artist_place(playlist, artist):
+    """
+    Creates a scoring multiplier based on whether an artist is artist 1, 2, 3, 4, 5, or 6 on a track.
+    The lower the artist place number, the higher the multiplier.
+
+    Parameters -- DataFrame
+    -----------------------
+    - Playlist and artist are Panda's DataFrames created using read_csv()
+
+    Return value -- Dictionary
+    --------------------------
+    - A dictionary in the following format is returned:
+        
+        {artist name: place multiplier, artist 2 name: place multiplier, ..., artist 6 name: place multiplier}
+    
+        The place multiplier options are the following:
+            - Artist 1 = 1
+            - Artist 2 = 0.95
+            - Artist 3 = 0.9
+            - Artist 4 = 0.85
+            - Artist 5 = 0.8
+            - Artist 6 = 0.75
+
+    Ex:
+    {
+        '4TGwERXRlyQtBdggYTHo6j': {'5Y3MV9DZ0d87NnVm56qSY1': 1, '1vqR17Iv8VFdzure1TAXEq': 0.95, '1DxLCyH42yaHKGK3cl5bvG': 0.9, '2UZIAOlrnyZmyzt1nuXr9y': 0.85},
+        '70LLyzO7jT6DsQvCwwHDch': {'1DxLCyH42yaHKGK3cl5bvG': 1},
+        '0EhpEsp4L0oRGM0vmeaN5e': {'1vyhD5VmyZ7KMfW5gqLgo5': 1, '6M2wZ9GZgrQXHCFfjv46we': 0.95, '4q3ewBCX7sLwd24euuV69X': 0.9, '0GM7qgcRCORpGnfcN2tCiB': 0.85},
+        '0gcOnIUKIG6JF56iFUfE0p': {'0UWZUmn7sybxMCqrw9tGa7': 1, '07YUOmWljBTXwIseAUd9TW': 0.95},
+    }
+    """
     playlist = playlist.fillna('')
     result = {}
     for i, p in playlist.iterrows():
+        # Some songs have same track_name. So we iterate using track_id b/c it's a unique value
         track_id = p['Track_Id']
+
+        #Can we remove artist_pop here?
         artist_pop = artist['Artist_Popularity']
+
         track = {}
         for j in playlist.columns:
             if j.endswith('1_Id'):
