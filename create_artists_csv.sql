@@ -1,5 +1,11 @@
-# Using SQL and playlist.csv to create table we'll use to 
-# get artist data from Spotify's API
+/*
+This query takes the playlist.csv file and creates a table
+containing every artists' Name and ID from the playlist table.
+
+This table is used in get_artists.py to make API requests to
+retrieeve data about every artists' popularity and most popular
+tracks.
+*/
 
 SELECT Artist_1_Name AS 'Artist_Name', Artist_1_Popularity AS 'Artist_Id'
 FROM playlist

@@ -1,3 +1,9 @@
+"""Turning the json with playlist data into a csv file.
+
+The script limits the table to 6 artists per track based on the
+track_with_max_artists variable found in finding_max_artists.py
+"""
+
 import json
 import csv
 

@@ -1,3 +1,12 @@
+"""Cleaning the playlist.csv file and renaming some headers.
+
+The os library is used for the following 3 actions:
+---------------------------------------------------
+1. Delete current csv file with wrong headers
+2. Creates new csv file with the correct headers
+3. Renames the new csv file to match the original file's name
+"""
+
 import os
 import pandas as pd
 

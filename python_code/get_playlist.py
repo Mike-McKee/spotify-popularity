@@ -1,3 +1,22 @@
+"""Finding the songs in my playlist using Spotify's API
+
+Five things are collected here:
+-------------------------------
+1. Track Name
+2. Track ID (unique)
+3. Track Popularity (based on Spotify's algorithm)
+4. Names of all artists on each track
+5. IDs (uninque) of all artists on each track
+
+Spotify limits each requests to no more than 100 responses. So
+I'm using an offset and a while loop to make multiple requests
+until data for every song in the playlist is received.
+
+At the end, the script creates a new file called playlist.json
+that stores the five things listed above.
+"""
+
+
 import secret_id
 import json
 import spotipy
@@ -17,8 +36,6 @@ all_tracks = []
 limit = 100
 offset = 0
 
-#Spotify API limmits requests to 100. Since the playlist has more songs than that,
-#the while loop keeps requesting until we have every song
 while True:
         requests = spotify.playlist_tracks(playlist_name, offset=offset, limit=limit)
 

@@ -1,3 +1,12 @@
+"""This script uses the data gathered and analyzed in other python scripts from
+this project to score a Spotify user's taste in music.
+
+It uses the equation defined here:
+----------------------------------
+TODO: insert link with a picture of the equation you created
+
+TODO: finish writing documentation for this python file
+"""
 import pandas as pd
 
 # X defines how much we favor the popularity of the tracks compared to the artists popylarity

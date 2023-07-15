@@ -1,3 +1,22 @@
+"""This script uses Spotify's API to retrieve the data for all artists
+on my playlist.
+
+I iterate through every artist in the artists.csv file.
+
+For each artist, I make a request to the Spotify API to retrieve the
+relevant data.
+
+There are 2 pieces of data collected
+------------------------------------
+1. Every artists' popularity rating
+2. Every artists' top ten tracks
+
+At the end of the script, I create a new file called updated_artists.csv,
+using the appropiate header names.
+
+"""
+
+
 #Code to get the artists data using Spotify's API
 import secret_id
 import time

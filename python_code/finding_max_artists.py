@@ -1,7 +1,12 @@
-"""
-Here I'm looking for the song in my playlist with the most artists
-on it. This will help me figure out how many "artists" columns I'll
-need to create when turning playlist.json into a csv file.
+"""Finds the song with the most artists singing on it.
+
+Iterates through a json file of songs and for each song, and it counts how many
+artists appear on the song.
+
+As the script iterates through the json file, the track_with_max_artists variable
+shows the song that currently has the most artists on it.
+
+If another song has more artists, then track_with_max_artists equals the new song.
 """
 
 import json
