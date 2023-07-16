@@ -1,32 +1,33 @@
-"""This script uses the data gathered and analyzed in other python scripts from
+"""
+This script uses the data gathered and analyzed in other python scripts from
 this project to score a Spotify user's taste in music.
 
 It uses the equation defined here:
 ----------------------------------
-TODO: insert link with a picture of the equation you created
+https://github.com/Mike-McKee/spotify-popularity/blob/main/images/equation_w_annotations.png
 
-TODO: finish writing documentation for this python file
 """
 import pandas as pd
 
-# X defines how much we favor the popularity of the tracks compared to the artists popylarity
+# X defines how much we favor the popularity of the tracks compared to the artists popylarity.
 X = 2
 Y = X + 1
 
 def read_csv(file):
-    """Uses pandas module to create a data frame with the file parameter
+    """
+    Uses pandas module to create a data frame with the file parameter.
 
     Parameter -- file
     -----------------
     - This has to be a csv file
     """
+
     df = pd.read_csv(file)
     return df
 
-# Returns dictionary of {artist name: artist poplularity}
 def artists_pop(artist):
     """
-    Finds the artist popularity for all artists given in the parameter
+    Finds the artist popularity for all artists given in the parameter.
 
     Parameter -- DataFrame
     -------------------
@@ -46,12 +47,12 @@ def artists_pop(artist):
         'Alejandro Sanz': 75
     }
     """
+
     popularity = {}
     for i, name in zip(artist['Artist_Popularity'], artist['Artist_Name']):
         popularity[name] = i
     return popularity
 
-# Returns dictionary of {track name: track popularity}
 def track_pop(playlist):
     """
     Finds the track popularity for all tracks given in the parameter.
@@ -74,6 +75,7 @@ def track_pop(playlist):
         'Suerte (Whenever, Wherever)': 71
     }
     """
+
     popularity = {}
     for i, name in zip(playlist['Track_Popularity'], playlist['Track_Name']):
         popularity[name] = i
@@ -110,6 +112,7 @@ def artist_place(playlist, artist):
         '0gcOnIUKIG6JF56iFUfE0p': {'0UWZUmn7sybxMCqrw9tGa7': 1, '07YUOmWljBTXwIseAUd9TW': 0.95},
     }
     """
+    
     playlist = playlist.fillna('')
     result = {}
     for i, p in playlist.iterrows():
@@ -151,6 +154,29 @@ def artist_place(playlist, artist):
 
 # Returns dictionary of {artist: [top 10 tracks]}
 def top_tracks(artist):
+    """
+    Returns every artists' most popular songs.
+
+    Parameter -- DataFrame
+    ----------------------
+    - artist is a Panda's DataFrame created using read_csv()
+
+
+    Return value -- Dictionary
+    --------------------------
+    - A dictionary in the following format is returned:
+
+        {artist: [top 10 tracks]}
+    
+    Ex:
+    {
+        'Abraham Mateo': ['Clavaito', 'Quiero Decirte', 'Te Miro A La Cara', "¿Qué Ha Pasao'?", 'Maníaca', 'Loco Enamorado', 'Bora Bora', 'La Idea', 'No Encuentro Palabras', 'Ahora Te Puedes Marchar'],
+        'Adam Levine': ['Ojalá', 'Lost Stars', 'Lifestyle (feat. Adam Levine)', 'Good Mood - Original Song From Paw Patrol: The Movie', 'No One Else Like You', 'A Higher Place', 'Lifestyle (feat. Adam Levine) - David Guetta Slap House Mix', 'Lost Stars - Into The Night Mix', 'Yesterday - The Voice Performance', 'Wings Of Stone'], 'Aitana': ['Los Ángeles', 'Mon Amour - Remix', 'LAS BABYS', 'Presiento', 'Formentera', 'mariposas', 'Quieres', 'Vas A Quedarte', 'Más De Lo Que Aposté', 'En El Coche'], 'Aleesha': ['ESO', '828', 'Angelito', 'cómo t va?', 'Ke Sientes', 'Arrepentío', 'NO MAN', 'Sin Kerer', 'La Patrona', 'Tono de Llamada'], 'Alejandro Rian1o': ['Solo tú', nan, nan, nan, nan, nan, nan, nan, nan, nan],
+        'Alejandro Sanz': ['La tortura', 'Corazón partío', 'Amiga mía', 'El Ultimo Adiós - Varios Artistas Version', 'Correcaminos', 'Mi soledad y yo', 'Te lo agradezco, pero no (feat. Shakira)', 'Un Beso en Madrid', 'Mi Persona Favorita', 'Desde cuando'],
+        'Alejandro Valencia': ['Alma - Remix', 'MAMAXITA', 'CANSADA', 'SOLA', 'Pa Mi', 'Olvidate de El', nan, nan, nan, nan]
+    }
+    """
+
     result = {}
     
     for i, a in artist.iterrows():
@@ -168,8 +194,32 @@ def top_tracks(artist):
 
     return result
 
-# Returns dictionary of {artist name: artist frequency}
+# Returns dictionary of 
 def artists_frequency(playlist, artist):
+    """
+    Returns the number of times each artist appear on a playlist.
+
+    Parameter -- DataFrame
+    ----------------------
+    - playlist and artist are Panda's DataFrames created using the read_csv() function
+
+    Return value -- dictionary
+    --------------------------
+    - Returns a dictionary in the format {artist name: (int) artist frequency}
+    
+    Ex:
+    {
+    'Maluma': 48,
+    'Manuel Turizo': 25,
+    'Marc Anthony': 4,
+    'Maria Becerra': 37,
+    'Mariah Angeliq': 4,
+    'Mariana Gomez': 1,
+    'Matisse': 5,
+    'Mau y Ricky': 18
+    }
+    """
+
     result = {}
     for a in artist.itertuples(index=False):
         count = 0
@@ -181,8 +231,36 @@ def artists_frequency(playlist, artist):
         result[a[0]] = count
     return result
 
-# Returns dictionary of {artist: # of top tracks in playlist}
 def percent_top_tracks(playlist, artist):
+    """
+    Uses top_tracks() function to count how many of an artists top tracks appear
+    in a playlist.
+
+    Parameter -- DataFrame
+    ----------------------
+    - playlist and artist are Panda's DataFrames created using read_csv()
+
+    Return value -- Dictionary
+    --------------------------
+    - A dictionary in the following format is returned:
+
+        {artist: # of top tracks in playlist}
+    
+    Ex:
+    {
+     'Kevin Bury': 2,
+     'Kewin Cosmos': 1,
+     'Kim Loaiza': 1,
+     'L-Gante': 1,
+     'Lalo Ebratt': 3,
+     'Lenny Tavarez': 3,
+     'Lola Indigo': 2,
+     'Maluma': 6,
+     'Manuel Turizo': 5,
+     'Marc Anthony': 1
+    }
+    """
+
     result = {}
 
     for index, art in artist.iterrows():
@@ -200,6 +278,34 @@ def percent_top_tracks(playlist, artist):
 
 # Returns dictionary {artist : multiplier based on ratio}
 def track_ratio(playlist, artist):
+    """
+    Uses artists_frequency() and percent_top_tracks() functions to calculate
+    every artists' ratio of "number of top songs in playlist to artist frequency".
+    Using that ratio, the function assigns every artist a value between 0.85 and 1.075.
+
+    Parameter -- DataFrame
+    ----------------------
+    - playlist and artist are Panda's DataFrames created using read_csv()
+
+    Return value -- Dictionary
+    --------------------------
+    -- A dicitonary in the following format is returned:
+
+        {artist : multiplier based on ratio}
+
+    Ex:
+    {
+     'Myke Towers': 0.85,
+     'Nacho': 0.925,
+     'NATTI NATASHA': 0.85,
+     'Nego do Borel': 0.85,
+     'Nicki Minaj': 1.075,
+     'Nicki Nicole': 0.925,
+     'Nicky Jam': 0.85
+    }
+
+    """
+
     frequency = artists_frequency(playlist, artist)
     top_tracks_playlist = percent_top_tracks(playlist,artist)
     result = {}
