@@ -12,3 +12,5 @@ songs and which artists show up in my playslists the most.
 The equation below takes into account certain factors to score one's taste in music:
 
 ![spotify scoring algorithm equation](images/equation_w_annotations.png)
+
+For a more in-depth breakdown of this project, visit [my Dorky Data post here](https://www.dorkydata.com/projects/creating-a-python-algorithm-to-score-my-taste-in-music)
