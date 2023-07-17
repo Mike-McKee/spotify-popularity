@@ -324,6 +324,32 @@ def track_ratio(playlist, artist):
 
 #Solves equation to give final score
 def final_score(playlist,artist):
+    """
+    Runs a few calculations to score a user's taste in music based on the songs/artists in their playlist.
+
+    Parameter -- DataFrame
+    ----------------------
+    - playlist and artist are Panda's DataFrames created using the read_csv() function.
+
+    Return value -- Integer
+    -----------------------
+    - An integer between 0 and 100 is returned (this is the algorithm's score for a playlist)
+
+    IMPORTANT VARIABLES TO KNOW
+    ---------------------------
+    This function uses the scoring equation I created.
+    Here are the variables you'll need to know:
+
+    X = some weighted multiplier to make the left side of the numerator worth more than the right side… For my final algorithm, I used X = 2 in my calculation
+    Y = X + 1 and is used to average the scores
+    T = track popularity
+    P = artist popularity with a scoring multiplier based on the artist' number on a track (Artist 1 is favored most while Artist 6 the least)
+    S = a scoring multiplier for p based on whether or not the artist popularity on a given track is > or < the track popularity
+    W = a scoring multiplier for p based on whether or not a song is in the artist's top tracks or not
+    R = artist popularity with a scoring multiplier based on the following ratio: # of an artist's top tracks in the playlist to the artist's frequency in the playlist
+
+    """
+
     #removing null values
     playlist = playlist.fillna('')
     
@@ -334,7 +360,7 @@ def final_score(playlist,artist):
     top_track = top_tracks(artist)
     artist_ratio = track_ratio(playlist,artist)
 
-    #finds part 'r' of the equation
+    #finds part 'R' of the equation
     ratio = []
     for i in artist_ratio:
         ratio.append(artist_pop[i] * artist_ratio[i])
@@ -345,6 +371,7 @@ def final_score(playlist,artist):
         artist_calc = []
         name = row['Track_Name']
         track_id = row['Track_Id']
+        #finds part 'T' of the equation
         t_pop = track_popularity.get(name,0)
         a_place = art_place.get(track_id,0)
 
@@ -356,13 +383,13 @@ def final_score(playlist,artist):
                 a_pop = artist_pop.get(a_name,0)
                 top_10 = top_track.get(a_name,0)
 
-                #multiplier if song popularity < or > artists popularity
+                #finds part 'S' of the equation
                 multiplier = 0.9 if t_pop < a_pop else 1.1
 
-                #multiplier if song is or is not in artist top tracks
+                #finds part 'W' of the equation
                 multiplier_2 = 1.1 if name in top_10 else 0.9
 
-                #Finding the multiplier for artist place
+                #finds part 'P' of the equation
                 place = a_place[a_id]
                 
                 artist_calc.append(place*a_pop*(multiplier*multiplier_2))
