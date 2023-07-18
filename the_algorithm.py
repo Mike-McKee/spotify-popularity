@@ -194,7 +194,6 @@ def top_tracks(artist):
 
     return result
 
-# Returns dictionary of 
 def artists_frequency(playlist, artist):
     """
     Returns the number of times each artist appear on a playlist.
